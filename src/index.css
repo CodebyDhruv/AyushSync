@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+:root{
+    --primary-color: #16a34a;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@layer utilities {
+  .font-noto {
+    font-family: 'Noto Sans', sans-serif;
+  }
+  
+  .font-spline {
+    font-family: 'Spline Sans', sans-serif;
+  }
+  .font-inter{
+    font-family: 'Inter', sans-serif;
+  }
+  .font-l{
+    font-family: "Lugrasimo", cursive;
+  }
+  .font-bm{
+    font-family: "Bodoni Moda", serif;
+  }
+}
