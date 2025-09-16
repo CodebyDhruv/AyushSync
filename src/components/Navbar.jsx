@@ -1,12 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import cardiogram from '../assets/cardiogram.png';
+import axios from 'axios';
 
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isAuthDropdownOpen, setIsAuthDropdownOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const token = localStorage.getItem('authToken');
+      const abhaId = localStorage.getItem('abhaId');
+      if (token) {
+        try {
+          const response = await axios.get('https://ayush-auth.vercel.app/users/me', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          setUser({ ...response.data, abhaId });
+        } catch (err) {
+          console.error('Fetch User Data Error in Navbar:', err);
+        }
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  // Auth state is now derived directly from localStorage
+  const token = localStorage.getItem('authToken');
+  const abhaId = localStorage.getItem('abhaId');
+
+  const handleSignOut = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('abhaId');
+    navigate("/login");
+    setIsMobileMenuOpen(false);
+    window.location.reload();
+  };
 
   const pages = [
     { name: "Home", path: "/" },
@@ -65,51 +100,62 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:block">
-          <div className="relative group">
-            <button
-              className="flex items-center gap-1 rounded-full bg-gray-100 py-2 px-3 text-xs lg:text-md font-medium hover:bg-gray-200 transition-colors"
-              onMouseEnter={() => setIsAuthDropdownOpen(true)}
-              onMouseLeave={() => setIsAuthDropdownOpen(false)}
+          {token ? (
+            <div 
+              className="relative"
+              onMouseEnter={() => setIsDropdownOpen(true)}
+              onMouseLeave={() => setIsDropdownOpen(false)}
             >
-              <svg
-                className="w-4 h-4 lg:w-5 lg:h-5 text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              <svg
-                className={`w-3 h-3 lg:w-4 lg:h-4 text-gray-500 transition-transform duration-200 ${isAuthDropdownOpen ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+              <button className="flex items-center gap-2 rounded-full bg-gray-100 py-2 lg:py-3 px-3 lg:px-5 text-xs lg:text-sm font-medium hover:bg-gray-200 transition-all duration-200 hover:shadow-md">
+                <span className="text-gray-700 hidden lg:inline">{user ? user.name : 'Welcome'}</span>
+                <svg
+                  className={`w-3 h-3 lg:w-4 lg:h-4 text-gray-500 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
 
-            <div
-              className={`absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-xl z-10 overflow-hidden transition-all duration-200 ${isAuthDropdownOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
-              onMouseEnter={() => setIsAuthDropdownOpen(true)}
-              onMouseLeave={() => setIsAuthDropdownOpen(false)}
-            >
-              <div className="py-1">
-                <Link
-                  to="/login"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[var(--primary-color)] transition-colors duration-150"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/signup"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[var(--primary-color)] transition-colors duration-150"
-                >
-                  Sign Up
-                </Link>
+              <div className={`absolute right-0 mt-0 w-48 lg:w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-10 overflow-hidden ${isDropdownOpen ? 'block' : 'hidden'}`}>
+                <div className="py-2">
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-medium text-gray-900">{user ? user.name : 'Logged in'}</p>
+                    <p className="text-xs text-gray-500 mt-1">{user ? user.email : abhaId}</p>
+                  </div>
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-medium text-gray-700">ABHA ID</p>
+                    <p className="text-xs text-gray-500 mt-1">{user ? user.abhaId : ''}</p>
+                  </div>
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-medium text-gray-700">Phone Number</p>
+                    <p className="text-xs text-gray-500 mt-1">{user ? user.phone_number : ''}</p>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-600 transition-colors duration-150 flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                      />
+                    </svg>
+                    Logout
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <Link to="/login">
+              <button className="flex items-center rounded-full bg-gray-100 py-2 px-3 lg:px-4 text-xs lg:text-md font-medium hover:bg-gray-200 transition-colors">
+                <h3 className="font-spline text-xs lg:text-sm"> Log In / Sign Up </h3>
+              </button>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -146,22 +192,22 @@ const Navbar = () => {
             );
           })}
 
-          <div className="border-t border-gray-200 pt-3 mt-3">
+          {token ? (
+            <button
+              onClick={handleSignOut}
+              className="text-left px-3 py-2 text-red-600 font-semibold hover:bg-gray-100 rounded-md"
+            >
+              Logout
+            </button>
+          ) : (
             <Link
               to="/login"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="block px-3 py-2 text-gray-700 font-semibold hover:text-[var(--primary-color)] rounded-md"
+              className="text-left px-3 py-2 text-gray-700 font-semibold hover:text-[var(--primary-color)] rounded-md"
             >
-              Login
+              Log In / Sign Up
             </Link>
-            <Link
-              to="/signup"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block px-3 py-2 text-gray-700 font-semibold hover:text-[var(--primary-color)] rounded-md"
-            >
-              Sign Up
-            </Link>
-          </div>
+          )}
         </nav>
       </div>
     </>

@@ -1,32 +1,68 @@
 import React, { useState } from 'react';
-import cardiogram from './assets/cardiogram.png'
-import { Link } from 'react-router-dom';
+import cardiogram from './assets/cardiogram.png';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function Login() {
-
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     abhaid: '',
+    otp: '',
   });
+  const [otpSent, setOtpSent] = useState(false);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState(''); // New state for success messages
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData(prevData => ({
       ...prevData,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: value
     }));
   };
-  const [otpSent, setOtpSent] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(''); // Clear previous errors
+
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
     if (!otpSent) {
-      setOtpSent(true);
+      // Request OTP for Login
+      try {
+        const response = await axios.post(`${apiBaseUrl}/request-login-otp`, null, {
+          params: { abha_id: formData.abhaid }
+        });
+        if (response.status === 200) {
+          setOtpSent(true);
+        }
+      } catch (err) {
+        setError(err.response?.data?.detail || 'Failed to send OTP. Please check the ABHA ID and try again.');
+        console.error('OTP Request Error:', err);
+      }
     } else {
-      setSubmittedData(formData);
-      console.log('Form Submitted!', formData);
+      // Verify OTP and get token
+      try {
+        const response = await axios.post(`${apiBaseUrl}/token`, null, {
+          params: {
+            abha_id: formData.abhaid,
+            otp: formData.otp
+          }
+        });
+        if (response.data.access_token) {
+          localStorage.setItem('authToken', response.data.access_token);
+          localStorage.setItem('abhaId', formData.abhaid);
+          setSuccessMessage('Logged in successfully!'); // Set success message
+          setTimeout(() => {
+            navigate('/'); // Redirect to home page after a short delay
+          }, 1500); // Redirect after 1.5 seconds
+        }
+      } catch (err) {
+        setError(err.response?.data?.detail || 'Invalid OTP. Please try again.');
+        console.error('OTP Verification Error:', err);
+      }
     }
   };
-
 
   return (
     <>
@@ -42,24 +78,23 @@ export default function Login() {
       </nav>
       <div className="bg-slate-100 min-h-screen flex flex-col items-center justify-center font-sans pt-24 sm:pt-28 lg:pt-32 px-4">
         <div className="w-full max-w-lg mx-auto">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2 text-center"> Login with ABHA ID</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2 text-center">Login with ABHA ID</h1>
           <p className="text-gray-500 mb-8 text-center">Securely access your health records</p>
           <div className="bg-white rounded-2xl shadow-lg p-8">
-
             <form onSubmit={handleSubmit} noValidate>
               <div className="space-y-6">
                 <div>
-                  <label htmlFor="abhaID" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="abhaid" className="block text-sm font-medium text-gray-700 mb-1">
                     ABHA ID
                   </label>
                   <input
                     type="text"
-                    id="abhaID"
-                    name="abhaID"
-                    value={formData.abhaID}
+                    id="abhaid"
+                    name="abhaid"
+                    value={formData.abhaid}
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    placeholder=" Enter your ABHA ID"
+                    placeholder="Enter your ABHA ID"
                     required
                     disabled={otpSent}
                   />
@@ -84,6 +119,9 @@ export default function Login() {
                 )}
               </div>
 
+              {successMessage && <p className="mt-4 text-center text-green-500 text-sm">{successMessage}</p>}
+              {error && <p className="mt-4 text-center text-red-500 text-sm">{error}</p>}
+
               <div className="mt-8">
                 <button
                   type="submit"
@@ -93,9 +131,10 @@ export default function Login() {
                 </button>
               </div>
             </form>
+            <p className="mt-6 text-center text-sm text-gray-600">
+              Don't have an account? <Link to="/signup" className="text-green-600 hover:underline">Sign up here</Link>
+            </p>
           </div>
-
-
         </div>
         <div className="w-full max-w-lg mx-auto text-center text-sm text-gray-600 mt-6">
           <p>
