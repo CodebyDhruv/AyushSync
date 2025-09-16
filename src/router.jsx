@@ -45,6 +45,7 @@ const router = createBrowserRouter([
             { path: "linkedin", element: <Comingsoon /> },
             { path: "terms", element: <Comingsoon /> },
             { path: "privacy_policy", element: <Comingsoon /> },
+            { path: "apidocs", element: <Apidocs />},
         ]
     }
 ]);
