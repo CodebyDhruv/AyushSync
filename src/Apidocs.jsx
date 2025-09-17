@@ -17,7 +17,7 @@ const CodeBlock = ({ children }) => {
 			try {
 				document.execCommand('copy');
 				setIsCopied(true);
-				setTimeout(() => setIsCopied(false), 2000); 
+				setTimeout(() => setIsCopied(false), 2000);
 			} catch (err) {
 				console.error('Failed to copy text: ', err);
 			}
@@ -66,6 +66,17 @@ const SubHeading = ({ children, id }) => (
 	<h3 id={id} className="text-2xl font-semibold text-gray-800 mt-10 mb-4 scroll-mt-24">
 		{children}
 	</h3>
+);
+
+const Image = ({ src, alt, width, height }) => (
+	<img
+		src={src}
+		alt={alt}
+		width={width}
+		height={height}
+		className="my-6 rounded-lg shadow-md border border-gray-200"
+		loading="lazy"
+	/>
 );
 
 const sections = [
@@ -119,8 +130,90 @@ const sections = [
 		)
 	},
 	{
+		id: 'cli',
+		title: 'CLI',
+		category: 'Getting Started',
+		subheadings: [
+			{ id: 'cli-features', title: 'Features' },
+			{ id: 'cli-install-npm', title: 'Installation (NPM)' },
+			{ id: 'cli-install-local', title: 'Installation (Local)' },
+			{ id: 'cli-usage', title: 'Usage' },
+			{ id: 'cli-auth', title: 'Authentication' },
+			{ id: 'cli-examples', title: 'Example Usage' },
+		],
+		content: (
+			<>
+				<p className="text-gray-700 mb-4">
+					The <InlineCode>Ayush-CLI</InlineCode> is a powerful command-line interface designed to bridge Indian Traditional Medicine with Modern Medicine. It leverages the AyushSync API to interact with FHIR Resources, offering functionalities for symptom diagnosis, medical code translation (ICD-11 to NAMASTE and vice-versa), and information lookup.
+				</p>
+
+				<SubHeading id="cli-features">Features</SubHeading>
+				<ul className="list-disc pl-6 space-y-2 text-gray-700">
+					<li><strong>Symptom Diagnosis (Chat):</strong> Engage in an interactive chat to describe symptoms and receive a diagnosis, recommended treatments, and information on datasets used.</li>
+					<li><strong>Medical Code Translation:</strong> Translate between ICD-11 and NAMASTE codes.</li>
+					<li><strong>Information Lookup:</strong> Find medical information by NAMASTE name or specific conditions.</li>
+					<li><strong>Interactive Experience:</strong> User-friendly prompts and formatted output for a seamless CLI experience.</li>
+					<li><strong>Test Mode:</strong> Bypass authentication for development and testing purposes.</li>
+				</ul>
+
+				<SubHeading id="cli-install-npm">Installation (NPM)</SubHeading>
+				<p className="text-gray-700 mb-2">To install the Ayush CLI globally via npm, open your terminal and run:</p>
+				<CodeBlock>npm install -g @mayankjha07/ayush-cli</CodeBlock>
+				<p className="text-gray-700 mb-2">Once installed, you can run the CLI using the `ayush-cli` command:</p>
+				<CodeBlock>{`ayush-cli <command> [options]
+# Example: ayush-cli chat
+# Example: ayush-cli --help`}</CodeBlock>
+
+				<SubHeading id="cli-install-local">Installation (Local Development)</SubHeading>
+				<p className="text-gray-700 mb-2">To run the Ayush CLI directly from the source for local development, navigate to the project root and execute:</p>
+				<CodeBlock>{`chmod 777 index.js
+./index.js`}</CodeBlock>
+
+				<SubHeading id="cli-usage">Usage</SubHeading>
+				<p className="text-gray-700 mb-4">The Ayush CLI can be used with various commands and flags.</p>
+				<h4 className="text-xl font-semibold text-gray-800 mt-6 mb-3">Global Options (Flags)</h4>
+				<ul className="list-disc pl-6 space-y-2 text-gray-700">
+					<li><InlineCode>-c, --clear</InlineCode>: Clears the console before executing the command.</li>
+					<li><InlineCode>-d, --debug</InlineCode>: Prints debug information.</li>
+					<li><InlineCode>-l, --logout</InlineCode>: Logs out the current user.</li>
+					<li><InlineCode>-q, --quit</InlineCode>: Quits the CLI application.</li>
+					<li><InlineCode>-t, --testMode</InlineCode>: Enables test mode, bypassing login for `chat` and `translate`.</li>
+				</ul>
+				<h4 className="text-xl font-semibold text-gray-800 mt-6 mb-3">Commands</h4>
+				<p className="text-gray-700 mb-2">The available commands depend on your authentication status.</p>
+				<h5 className="text-lg font-semibold text-gray-700 mt-4 mb-2">Logged In / Test Mode Commands</h5>
+				<p className="mb-2 text-gray-700"><InlineCode>chat</InlineCode>: Starts an interactive session to describe symptoms and get a diagnosis.</p>
+				<p className="mt-4 mb-2 text-gray-700"><InlineCode>translate</InlineCode>: Provides a suite of tools for medical code translation and lookup.</p>
+
+				<SubHeading id="cli-auth">Authentication</SubHeading>
+				<p className="text-gray-700 mb-2">
+					The <InlineCode>chat</InlineCode> and <InlineCode>translate</InlineCode> features require authentication. If not logged in, you will be prompted to:
+				</p>
+				<ul className="list-disc pl-6 space-y-2 text-gray-700">
+					<li>Login with your AyushSync API credentials.</li>
+					<li>Sign Up (opens the website).</li>
+					<li>Continue as Guest (limited features).</li>
+					<li>Enter Test Mode (full access without login).</li>
+				</ul>
+
+				<SubHeading id="cli-examples">Example Usage</SubHeading>
+				<CodeBlock>{`# Start the CLI in interactive REPL mode
+./index.js
+
+# Enable test mode and then start the REPL
+./index.js --test-mode
+
+# Directly initiate the chat feature (requires login or test mode)
+./index.js chat
+
+# Get help information about the CLI
+./index.js help`}</CodeBlock>
+			</>
+		)
+	},
+	{
 		id: 'authentication',
-		title: 'Authentication',
+		title: 'Authentication API',
 		category: 'API Reference',
 		subheadings: [
 			{ id: 'auth-otp-reg', title: '1. Request OTP for Registration' },
@@ -186,25 +279,118 @@ const sections = [
 		)
 	},
 	{
-		id: 'codesystem',
-		title: 'Code System',
+		id: 'mapping',
+		title: 'Mapping API',
 		category: 'API Reference',
 		subheadings: [
-			
+			{ id: 'map-translate-icd', title: '1. Translate ICD to Traditional' },
+			{ id: 'map-translate-traditional', title: '2. Translate Traditional to ICD' },
+			{ id: 'map-get-all', title: '3. Get All ConceptMaps' },
+			{ id: 'map-test', title: '4. Test Endpoint' },
 		],
 		content: (
 			<>
+				<p className="text-gray-700 mb-4">
+					Use the ConceptMap endpoints to translate codes between different terminology systems, such as traditional medicine (NAMASTE) and ICD.
+				</p>
+				<p className="text-gray-700 font-medium">Base URL: <InlineCode>http://3.26.95.153:8080</InlineCode></p>
+
+				<SubHeading id="map-translate-icd">1. Translate ICD Code to Traditional Code</SubHeading>
+				<p className="mb-2">Translates an ICD-10 code to a corresponding traditional medicine code.</p>
+				<p><span className="font-semibold">Path:</span> <InlineCode>/api/conceptmaps/translate/icd/{'{icdCode}'}</InlineCode></p>
+				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
+				<p className="font-semibold mt-2">Example Request:</p>
+				<CodeBlock>{`curl http://3.26.95.153:8080/api/conceptmaps/translate/icd/SK00`}</CodeBlock>
+
+				<SubHeading id="map-translate-traditional">2. Translate Traditional Code to ICD Code</SubHeading>
+				<p className="mb-2">Translates a traditional medicine code to a corresponding ICD-10 code. You need to specify the code category (e.g., NAMC or NUMC) in the URL.</p>
+				<p><span className="font-semibold">Path:</span> <InlineCode>/api/conceptmaps/translate/traditional/{'{traditionalCode}'}</InlineCode></p>
+				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
+				<p className="font-semibold mt-2">Example Request:</p>
+				<CodeBlock>{`curl http://3.26.95.153:8080/api/conceptmaps/translate/traditional/NAMC:AAB-52`}</CodeBlock>
+
+				<SubHeading id="map-get-all">3. Get All ConceptMaps</SubHeading>
+				<p className="mb-2">Retrieves all the stored ConceptMaps.</p>
+				<p><span className="font-semibold">Path:</span> <InlineCode>/api/conceptmaps/all</InlineCode></p>
+				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
+				<p className="font-semibold mt-2">Example Request:</p>
+				<CodeBlock>{`curl http://3.26.95.153:8080/api/conceptmaps/all`}</CodeBlock>
+
+				<SubHeading id="map-test">4. Test Endpoint</SubHeading>
+				<p className="mb-2">A simple test endpoint to verify that the ConceptMap API is running.</p>
+				<p><span className="font-semibold">Path:</span> <InlineCode>/api/conceptmaps/test</InlineCode></p>
+				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
+				<p className="font-semibold mt-2">Example Request:</p>
+				<CodeBlock>{`curl http://3.26.95.153:8080/api/conceptmaps/test`}</CodeBlock>
 			</>
 		)
 	},
 	{
-		id: 'mapping',
-		title: 'Mapping',
+		id: 'codesystem',
+		title: 'Code System & FHIR API',
 		category: 'API Reference',
 		subheadings: [
+			{ id: 'cs-get-all-overview', title: '1. Get CodeSystems Overview' },
+			{ id: 'cs-get-all-fhir', title: '2. Get All CodeSystems (FHIR)' },
+			{ id: 'cs-get-by-id-fhir', title: '3. Get CodeSystem by ID (FHIR)' },
+			{ id: 'cs-lookup-fhir', title: '4. FHIR $lookup Operation' },
+			{ id: 'cs-test-db', title: '5. Test Database Connection' },
+			{ id: 'cs-health-check', title: '6. Health Check' },
 		],
 		content: (
 			<>
+				<p className="text-gray-700 mb-4">
+					Interact with the underlying terminology code systems, perform lookups, and check service health. These endpoints allow for both simple overviews and FHIR-compliant interactions.
+				</p>
+				<p className="text-gray-700 font-medium">Base URL: <InlineCode>http://3.26.95.153:8080</InlineCode></p>
+
+				<SubHeading id="cs-get-all-overview">1. Get All CodeSystems Overview</SubHeading>
+				<p className="mb-2">Retrieves an overview of all available CodeSystems.</p>
+				<p><span className="font-semibold">Path:</span> <InlineCode>/api/codesystem/all</InlineCode></p>
+				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
+				<p className="font-semibold mt-2">Example Request:</p>
+				<CodeBlock>{`curl http://3.26.95.153:8080/api/codesystem/all`}</CodeBlock>
+
+				<SubHeading id="cs-get-all-fhir">2. Get All CodeSystems (FHIR)</SubHeading>
+				<p className="mb-2">Retrieves all CodeSystems as a FHIR Bundle.</p>
+				<p><span className="font-semibold">Path:</span> <InlineCode>/api/fhir/CodeSystem</InlineCode></p>
+				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
+				<p className="font-semibold mt-2">Example Request:</p>
+				<CodeBlock>{`curl http://3.26.95.153:8080/api/fhir/CodeSystem`}</CodeBlock>
+
+				<SubHeading id="cs-get-by-id-fhir">3. Get CodeSystem by ID (FHIR)</SubHeading>
+				<p className="mb-2">Retrieves a specific CodeSystem by its ID as a FHIR CodeSystem resource.</p>
+				<p><span className="font-semibold">Path:</span> <InlineCode>/api/fhir/CodeSystem/{'{id}'}</InlineCode></p>
+				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
+				<p className="font-semibold mt-2">Example Request:</p>
+				<CodeBlock>{`curl http://3.26.95.153:8080/api/fhir/CodeSystem/ayurveda`}</CodeBlock>
+
+				<SubHeading id="cs-lookup-fhir">4. FHIR $lookup Operation</SubHeading>
+				<p className="mb-2">Performs a FHIR <InlineCode>$lookup</InlineCode> operation to find a concept within a specified code system.</p>
+				<p><span className="font-semibold">Path:</span> <InlineCode>/api/codesystem/lookup</InlineCode></p>
+				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
+				<p className="font-semibold mt-2">Code System URLs:</p>
+				<ul className="list-disc pl-6 space-y-2 text-gray-700">
+					<li><strong>Ayurveda:</strong> <InlineCode>http://namaste.ayush.gov.in/fhir/CodeSystem/ayurveda-medicine-codes</InlineCode></li>
+					<li><strong>Siddha:</strong> <InlineCode>http://namaste.ayush.gov.in/fhir/CodeSystem/siddha-medicine-codes</InlineCode></li>
+					<li><strong>Unani:</strong> <InlineCode>http://namaste.ayush.gov.in/fhir/CodeSystem/unani-medicine-codes</InlineCode></li>
+				</ul>
+				<p className="font-semibold mt-2">Example Request (Ayurveda):</p>
+				<CodeBlock>{`curl "http://3.26.95.153:8080/api/codesystem/lookup?system=http://namaste.ayush.gov.in/fhir/CodeSystem/ayurveda-medicine-codes&code=AAB"`}</CodeBlock>
+
+				<SubHeading id="cs-test-db">5. Test Database Connection</SubHeading>
+				<p className="mb-2">Checks the database connection and returns metadata.</p>
+				<p><span className="font-semibold">Path:</span> <InlineCode>/test-db</InlineCode></p>
+				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
+				<p className="font-semibold mt-2">Example Request:</p>
+				<CodeBlock>{`curl http://3.26.95.153:8080/test-db`}</CodeBlock>
+
+				<SubHeading id="cs-health-check">6. Health Check</SubHeading>
+				<p className="mb-2">A health check endpoint to verify if the application is running.</p>
+				<p><span className="font-semibold">Path:</span> <InlineCode>/health</InlineCode></p>
+				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
+				<p className="font-semibold mt-2">Example Request:</p>
+				<CodeBlock>{`curl http://3.26.95.153:8080/health`}</CodeBlock>
 			</>
 		)
 	},
@@ -251,23 +437,27 @@ const Apidocs = () => {
 	const [activeSubheading, setActiveSubheading] = useState('');
 	const mainContentRef = useRef(null);
 
-	const currentSection = useMemo(() => sections.find(sec => sec.id === activeSection), [activeSection]);
+	const currentSection = useMemo(() => sections.find(sec => sec.id === activeSection) || sections[0], [activeSection]);
 
 	const categories = useMemo(() => {
-		return sections.reduce((acc, section) => {
+		const sortedSections = [...sections];
+		return sortedSections.reduce((acc, section) => {
 			(acc[section.category] = acc[section.category] || []).push(section);
 			return acc;
 		}, {});
 	}, []);
 
+
 	useEffect(() => {
 		const observer = new IntersectionObserver(
 			(entries) => {
-				entries.forEach((entry) => {
+				const reversedEntries = [...entries].reverse();
+				for (const entry of reversedEntries) {
 					if (entry.isIntersecting) {
 						setActiveSubheading(entry.target.id);
+						return;
 					}
-				});
+				}
 			},
 			{
 				rootMargin: '-80px 0px -50% 0px',
@@ -278,25 +468,32 @@ const Apidocs = () => {
 		const headings = mainContentRef.current?.querySelectorAll('h2[id], h3[id]');
 		headings?.forEach(heading => observer.observe(heading));
 
-		return () => observer.disconnect();
+		return () => {
+			headings?.forEach(heading => observer.unobserve(heading));
+		};
 	}, [activeSection]);
 
 	const handleSectionClick = (sectionId) => {
 		setActiveSection(sectionId);
-		setActiveSubheading(sections.find(s => s.id === sectionId)?.subheadings[0]?.id || '');
-		window.scrollTo(0, 0); // Scroll page to top
+		const newSection = sections.find(s => s.id === sectionId);
+		setActiveSubheading(sectionId);
+		if (mainContentRef.current) {
+			mainContentRef.current.scrollTop = 0;
+		}
+		window.history.pushState(null, '', `#${sectionId}`);
 	};
+
 
 	const handleSubheadingClick = (subheadingId) => {
 		document.getElementById(subheadingId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		window.history.pushState(null, '', `#${subheadingId}`);
 	};
 
 	return (
 		<>
 			<Navbar />
-			<div className="bg-white mt-15 pt-16">
+			<div className="bg-white mt-15 pt-16 mb-16">
 				<div className="flex flex-col lg:flex-row max-w-7xl mx-auto">
-					{/* Left Sidebar - Main Navigation */}
 					<aside className="lg:w-72 bg-white sticky top-16 self-start p-6 h-[calc(100vh-4rem)] overflow-y-auto">
 						<nav>
 							{Object.entries(categories).map(([category, sectionsInCategory]) => (
@@ -322,13 +519,11 @@ const Apidocs = () => {
 						</nav>
 					</aside>
 
-					{/* Main Content */}
-					<main ref={mainContentRef} className="flex-1 px-8 py-12 min-w-0">
+					<main ref={mainContentRef} className="flex-1 px-8 py-12 min-w-0 h-[calc(100vh-4rem)] overflow-y-auto">
 						<SectionHeading id={currentSection.id}>{currentSection.title}</SectionHeading>
 						{currentSection.content}
 					</main>
 
-					{/* Right Sidebar - On This Page */}
 					<aside className="hidden lg:block lg:w-72 bg-white sticky top-16 self-start p-6 h-[calc(100vh-4rem)] overflow-y-auto">
 						{currentSection.subheadings.length > 0 && (
 							<div>
@@ -359,9 +554,9 @@ const Apidocs = () => {
 							</h4>
 							<p className="text-sm text-green-700 mb-3">Questions about AyushSync?</p>
 							<Link to="/contact">
-							<button className="text-sm bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors w-full">
-								Contact Support
-							</button>
+								<button className="text-sm bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors w-full">
+									Contact Support
+								</button>
 							</Link>
 						</div>
 					</aside>
@@ -373,4 +568,3 @@ const Apidocs = () => {
 };
 
 export default Apidocs;
-
