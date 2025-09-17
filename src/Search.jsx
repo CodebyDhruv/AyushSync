@@ -3,29 +3,239 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { Link } from 'react-router-dom';
 
-const namaResults = [
-  { code: 'NMS001', desc: 'Common Cold' },
-  { code: 'NMS002', desc: 'Influenza' },
-  { code: 'NMS003', desc: 'Pneumonia' },
-  { code: 'NMS004', desc: 'Bronchitis' },
-  { code: 'NMS005', desc: 'Asthma' }
-];
+const API_BASE = '';
 
-const icdResults = [
-  { code: 'AA00.0', desc: 'Common Cold' },
-  { code: 'AB01.2', desc: 'Influenza' },
-  { code: 'CD34.5', desc: 'Pneumonia' },
-  { code: 'EF67.8', desc: 'Bronchitis' },
-  { code: 'GH90.1', desc: 'Asthma' }
-];
+const CODE_SYSTEMS = {
+  ayurveda: 'http://namaste.ayush.gov.in/fhir/CodeSystem/ayurveda-medicine-codes',
+  siddha: 'http://namaste.ayush.gov.in/fhir/CodeSystem/siddha-medicine-codes',
+  unani: 'http://namaste.ayush.gov.in/fhir/CodeSystem/unani-medicine-codes'
+};
 
 const Search = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchMode, setSearchMode] = useState('lookup'); // 'lookup', 'icd-to-traditional', 'traditional-to-icd'
+  const [selectedCodeSystem, setSelectedCodeSystem] = useState('ayurveda');
+  const [traditionalCodePrefix, setTraditionalCodePrefix] = useState('NAMC');
   const [showResults, setShowResults] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  // Results
+  const [lookupResults, setLookupResults] = useState([]);
+  const [traditionalResults, setTraditionalResults] = useState([]);
+  const [icdResults, setIcdResults] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const handleSearch = (term = searchTerm) => {
-    setSearchTerm(term);
-    setShowResults(true);
+  const handleSearch = async (term = searchTerm) => {
+    if (!term.trim()) return;
+    
+    setLoading(true);
+    setError('');
+    setShowResults(false);
+    setShowSuggestions(false);
+    
+    try {
+      switch (searchMode) {
+        case 'lookup':
+          await performLookupSearch(term);
+          break;
+        case 'icd-to-traditional':
+          await performIcdToTraditionalSearch(term);
+          break;
+        case 'traditional-to-icd':
+          await performTraditionalToIcdSearch(term);
+          break;
+      }
+      setShowResults(true);
+    } catch (err) {
+      setError(err.message || 'An error occurred while searching');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const performLookupSearch = async (term) => {
+    const results = [];
+    
+    // Search only the selected code system
+    const systemUrl = CODE_SYSTEMS[selectedCodeSystem];
+    try {
+      console.log(`Searching ${selectedCodeSystem} with URL: ${systemUrl}`);
+      const response = await fetch(`${API_BASE}/api/codesystem/lookup?system=${encodeURIComponent(systemUrl)}&code=${encodeURIComponent(term)}`);
+      
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Response data:', data);
+        results.push({
+          system: selectedCodeSystem,
+          systemUrl,
+          code: term,
+          ...data
+        });
+      } else {
+        const errorText = await response.text();
+        console.error(`API Error: ${response.status} - ${errorText}`);
+        throw new Error(`API returned ${response.status}: ${errorText}`);
+      }
+    } catch (err) {
+      console.error(`Error searching ${selectedCodeSystem}:`, err);
+      throw err;
+    }
+    
+    setLookupResults(results);
+  };
+
+  const performIcdToTraditionalSearch = async (icdCode) => {
+    console.log(`Searching ICD code: ${icdCode}`);
+    try {
+      const response = await fetch(`${API_BASE}/api/conceptmaps/translate/icd/${encodeURIComponent(icdCode)}`, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log('ICD Response status:', response.status);
+      
+      if (!response.ok) {
+        // Handle CORS issues
+        if (response.status === 200) {
+          setSuggestions([{
+            traditionalDisplay: "Data received but blocked by CORS policy",
+            traditionalCode: "CORS_BLOCKED",
+            icdCode: icdCode,
+            system: "cors-blocked"
+          }]);
+          setShowSuggestions(true);
+          setTraditionalResults([]);
+          return;
+        }
+        const errorText = await response.text().catch(() => 'Unable to read error message due to CORS');
+        throw new Error(`API Error: ${response.status} - ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log('ICD Response data:', data);
+      
+      if (Array.isArray(data)) {
+        setSuggestions(data);
+        setShowSuggestions(true);
+        setTraditionalResults([]);
+      } else {
+        throw new Error('Invalid response format: expected array');
+      }
+    } catch (err) {
+      // Check if it's a CORS error
+      if (err.message.includes('CORS') || err.message.includes('fetch')) {
+        setSuggestions([{
+          traditionalDisplay: "CORS policy is blocking the response. Check network tab for actual results.",
+          traditionalCode: "CORS_ERROR",
+          icdCode: icdCode,
+          system: "cors-error"
+        }]);
+        setShowSuggestions(true);
+        setTraditionalResults([]);
+        return;
+      }
+      
+      console.error('ICD search error:', err);
+      throw err;
+    }
+  };
+
+  const performTraditionalToIcdSearch = async (traditionalCode) => {
+    const fullCode = `${traditionalCodePrefix}:${traditionalCode}`;
+    console.log(`Searching traditional code: ${fullCode}`);
+    
+    try {
+      const response = await fetch(`${API_BASE}/api/conceptmaps/translate/traditional/${encodeURIComponent(fullCode)}`, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        // Handle CORS issues by showing success if we can see the status
+        if (response.status === 200) {
+          setIcdResults([{
+            traditionalCode: fullCode,
+            icdCode: "CORS_BLOCKED",
+            icdDisplay: "Data received but blocked by CORS policy. Check network tab for actual results.",
+            system: "cors-blocked"
+          }]);
+          return;
+        }
+        const errorText = await response.text().catch(() => 'Unable to read error message due to CORS');
+        throw new Error(`API Error: ${response.status} - ${errorText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (Array.isArray(data)) {
+        setIcdResults(data);
+      } else {
+        throw new Error('Invalid response format: expected array');
+      }
+    } catch (err) {
+      // Check if it's a CORS error
+      if (err.message.includes('CORS') || err.message.includes('fetch')) {
+        setIcdResults([{
+          traditionalCode: fullCode,
+          icdCode: "CORS_ERROR",
+          icdDisplay: "CORS policy is blocking the response. The API is working (check network tab), but the browser cannot access the response.",
+          system: "cors-error"
+        }]);
+        return;
+      }
+      
+      console.error('Traditional search error:', err);
+      throw err;
+    }
+  };
+
+  const handleSuggestionClick = async (suggestion) => {
+    // Extract the code part (remove NAMC: or NUMC: prefix)
+    const codeMatch = suggestion.traditionalCode.match(/^(NAMC|NUMC):(.+)$/);
+    if (!codeMatch) return;
+    
+    const code = codeMatch[2];
+    
+    // Determine code system from traditional display
+    const displayLower = suggestion.traditionalDisplay.toLowerCase();
+    let systemUrl;
+    if (displayLower.includes('siddha')) {
+      systemUrl = CODE_SYSTEMS.siddha;
+    } else if (displayLower.includes('unani')) {
+      systemUrl = CODE_SYSTEMS.unani;
+    } else {
+      systemUrl = CODE_SYSTEMS.ayurveda; // default
+    }
+    
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE}/api/codesystem/lookup?system=${encodeURIComponent(systemUrl)}&code=${encodeURIComponent(code)}`);
+      if (response.ok) {
+        const data = await response.json();
+        setTraditionalResults([{
+          ...data,
+          originalSuggestion: suggestion
+        }]);
+        setShowSuggestions(false);
+        setShowResults(true);
+      }
+    } catch (err) {
+      setError('Failed to lookup traditional code details');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePopularSearch = (term) => {
@@ -36,6 +246,12 @@ const Search = () => {
   const clearSearch = () => {
     setSearchTerm('');
     setShowResults(false);
+    setShowSuggestions(false);
+    setSuggestions([]);
+    setLookupResults([]);
+    setTraditionalResults([]);
+    setIcdResults([]);
+    setError('');
   };
 
   return (
@@ -54,6 +270,85 @@ const Search = () => {
         }}></div>
 
         <div className="relative z-10 mx-auto max-w-6xl pt-16 sm:pt-20">
+          {/* Search Mode Selector */}
+          <div className="mb-6">
+            <div className="flex flex-wrap gap-2 justify-center">
+              <button
+                onClick={() => setSearchMode('lookup')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors font-spline ${
+                  searchMode === 'lookup' 
+                    ? 'bg-green-600 text-white' 
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                Code Lookup
+              </button>
+              <button
+                onClick={() => setSearchMode('icd-to-traditional')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors font-spline ${
+                  searchMode === 'icd-to-traditional' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                ICD to Traditional
+              </button>
+              <button
+                onClick={() => setSearchMode('traditional-to-icd')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors font-spline ${
+                  searchMode === 'traditional-to-icd' 
+                    ? 'bg-purple-600 text-white' 
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                Traditional to ICD
+              </button>
+            </div>
+          </div>
+
+          {/* Additional Options */}
+          {searchMode === 'lookup' && (
+            <div className="mb-4 flex justify-center">
+              <select
+                value={selectedCodeSystem}
+                onChange={(e) => setSelectedCodeSystem(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 font-spline"
+              >
+                <option value="ayurveda">Ayurveda</option>
+                <option value="siddha">Siddha</option>
+                <option value="unani">Unani</option>
+              </select>
+            </div>
+          )}
+
+          {searchMode === 'traditional-to-icd' && (
+            <div className="mb-4 flex justify-center">
+              <div className="flex gap-4">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    value="NAMC"
+                    checked={traditionalCodePrefix === 'NAMC'}
+                    onChange={(e) => setTraditionalCodePrefix(e.target.value)}
+                    className="mr-2"
+                  />
+                  <span className="text-gray-700 font-spline">NAMC</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    value="NUMC"
+                    checked={traditionalCodePrefix === 'NUMC'}
+                    onChange={(e) => setTraditionalCodePrefix(e.target.value)}
+                    className="mr-2"
+                  />
+                  <span className="text-gray-700 font-spline">NUMC</span>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* Search Input */}
           <div className="relative mb-8">
             <svg
               className="w-6 h-6 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
@@ -74,92 +369,154 @@ const Search = () => {
               onChange={e => setSearchTerm(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
               className="form-input w-full rounded-full border-2 border-gray-300 bg-white p-3 sm:p-4 pl-12 sm:pl-14 pr-10 sm:pr-12 text-base sm:text-lg text-gray-900 placeholder-gray-500 focus:border-[var(--primary-color)] focus:outline-none focus:ring-0 font-spline"
-              placeholder="Search for a condition or code..."
+              placeholder={
+                searchMode === 'lookup' ? `Search for a ${selectedCodeSystem} code...` :
+                searchMode === 'icd-to-traditional' ? 'Enter ICD-11 code...' :
+                'Enter traditional medicine code...'
+              }
+              disabled={loading}
             />
-            {!!searchTerm && (
+            {searchTerm && (
               <button
                 onClick={clearSearch}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800"
                 aria-label="Clear search"
               >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             )}
           </div>
 
+          {/* Loading State */}
+          {loading && (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+              <p className="mt-2 text-gray-600 font-spline">Searching...</p>
+            </div>
+          )}
 
-          {showResults ? (
+          {/* Error State */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <p className="text-red-800 font-spline">{error}</p>
+            </div>
+          )}
+
+          {/* Suggestions (ICD to Traditional) */}
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 font-spline">Select a Traditional Medicine Code:</h3>
+              <div className="bg-white rounded-lg border border-gray-200 shadow-lg max-h-96 overflow-y-auto">
+                {suggestions.map((suggestion, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                  >
+                    <div className="font-semibold text-gray-900 font-spline">{suggestion.traditionalDisplay}</div>
+                    <div className="text-sm text-gray-600 font-spline">{suggestion.traditionalCode}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Results */}
+          {showResults && (
             <div className="space-y-8 sm:space-y-12">
-              <div>
-                <h2 className="text-gray-900 text-2xl sm:text-3xl font-bold tracking-tight mb-6 font-spline">NAMASTE Code Results</h2>
-                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[600px]">
-                      <thead className="bg-gradient-to-r from-green-50 to-emerald-50">
-                        <tr>
-                          <th className="px-4 sm:px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider text-gray-700">NAMASTE Code</th>
-                          <th className="px-4 sm:px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider text-gray-700">Description</th>
-                          <th className="relative px-4 sm:px-6 py-4"><span className="sr-only">Select</span></th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200">
-                        {namaResults.map(res => (
-                          <tr key={res.code} className="hover:bg-green-50 transition-colors">
-                            <td className="px-4 sm:px-6 py-4 text-base font-semibold text-gray-900 font-spline">{res.code}</td>
-                            <td className="px-4 sm:px-6 py-4 text-base text-gray-700 font-spline">{res.desc}</td>
-                            <td className="px-4 sm:px-6 py-4 text-right text-base font-medium">
-                              <Link className="text-green-600 hover:text-green-800 font-semibold transition-colors font-spline" href="#">View Mapping</Link>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+              {/* Lookup Results */}
+              {lookupResults.length > 0 && (
+                <div>
+                  <h2 className="text-gray-900 text-2xl sm:text-3xl font-bold tracking-tight mb-6 font-spline">Code Lookup Results</h2>
+                  <div className="grid gap-6">
+                    {lookupResults.map((result, index) => (
+                      <div key={index} className="bg-white rounded-xl border border-gray-200 p-6 shadow-lg">
+                        <div className="flex justify-between items-start mb-4">
+                          <h3 className="text-lg font-bold text-gray-900 font-spline capitalize">{result.system}</h3>
+                          <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium font-spline">
+                            {result.code || searchTerm}
+                          </span>
+                        </div>
+                        <p className="text-gray-700 font-spline">{result.display || result.name || 'No description available'}</p>
+                        {result.definition && (
+                          <p className="text-sm text-gray-600 mt-2 font-spline">{result.definition}</p>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
+              )}
 
-              <div>
-                <h2 className="text-gray-900 text-2xl sm:text-3xl font-bold tracking-tight mb-6 font-spline">ICD-11 Code Results</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  {icdResults.map(res => (
-                    <div key={res.code} className="rounded-xl border border-gray-200 bg-white p-5 sm:p-6 shadow-lg transition-all hover:border-blue-500 hover:shadow-xl hover:-translate-y-1">
-                      <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 font-spline">{res.code}</h3>
-                      <p className="text-base text-gray-700 leading-relaxed font-spline">{res.desc}</p>
+              {/* Traditional Results */}
+              {traditionalResults.length > 0 && (
+                <div>
+                  <h2 className="text-gray-900 text-2xl sm:text-3xl font-bold tracking-tight mb-6 font-spline">Traditional Medicine Details</h2>
+                  {traditionalResults.map((result, index) => (
+                    <div key={index} className="bg-white rounded-xl border border-gray-200 p-6 shadow-lg">
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="text-lg font-bold text-gray-900 font-spline">{result.originalSuggestion.traditionalDisplay}</h3>
+                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium font-spline">
+                          {result.originalSuggestion.traditionalCode}
+                        </span>
+                      </div>
+                      <p className="text-gray-700 font-spline">{result.display || result.name || 'No description available'}</p>
+                      {result.definition && (
+                        <p className="text-sm text-gray-600 mt-2 font-spline">{result.definition}</p>
+                      )}
                     </div>
                   ))}
                 </div>
-              </div>
-            </div>
-          ) : (
-            <>
+              )}
 
+              {/* ICD Results */}
+              {icdResults.length > 0 && (
+                <div>
+                  <h2 className="text-gray-900 text-2xl sm:text-3xl font-bold tracking-tight mb-6 font-spline">ICD Code Results</h2>
+                  <div className="grid gap-4">
+                    {icdResults.map((result, index) => (
+                      <div key={index} className="bg-white rounded-xl border border-gray-200 p-6 shadow-lg">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="text-lg font-bold text-gray-900 font-spline">{result.icdCode}</h3>
+                          <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium font-spline">
+                            ICD-11
+                          </span>
+                        </div>
+                        <p className="text-gray-700 font-spline">{result.icdDisplay}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* No Results */}
+              {lookupResults.length === 0 && traditionalResults.length === 0 && icdResults.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-gray-600 font-spline">No results found for "{searchTerm}"</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Default Content */}
+          {!showResults && !showSuggestions && !loading && (
+            <>
               <div className="w-full">
                 <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-gray-900 font-spline mb-4 sm:mb-6 text-center">Popular Searches</h3>
                 <div className="flex gap-2 sm:gap-3 justify-center flex-wrap">
                   <button className="flex h-8 sm:h-10 items-center justify-center rounded-full bg-green-100 text-green-800 px-3 sm:px-5 text-xs sm:text-sm font-medium hover:bg-green-200 transition-colors font-spline"
-                    onClick={() => handlePopularSearch("Diabetes")}>Diabetes</button>
+                    onClick={() => handlePopularSearch("SK00")}>SK00</button>
                   <button className="flex h-8 sm:h-10 items-center justify-center rounded-full bg-green-100 text-green-800 px-3 sm:px-5 text-xs sm:text-sm font-medium hover:bg-green-200 transition-colors font-spline"
-                    onClick={() => handlePopularSearch("Hypertension")}>Hypertension</button>
+                    onClick={() => handlePopularSearch("AAB")}>AAB</button>
                   <button className="flex h-8 sm:h-10 items-center justify-center rounded-full bg-green-100 text-green-800 px-3 sm:px-5 text-xs sm:text-sm font-medium hover:bg-green-200 transition-colors font-spline"
-                    onClick={() => handlePopularSearch("Influenza")}>Influenza</button>
+                    onClick={() => handlePopularSearch("RI")}>RI</button>
                   <button className="flex h-8 sm:h-10 items-center justify-center rounded-full bg-green-100 text-green-800 px-3 sm:px-5 text-xs sm:text-sm font-medium hover:bg-green-200 transition-colors font-spline"
-                    onClick={() => handlePopularSearch("Arthritis")}>Arthritis</button>
-                  <button className="flex h-8 sm:h-10 items-center justify-center rounded-full bg-green-100 text-green-800 px-3 sm:px-5 text-xs sm:text-sm font-medium hover:bg-green-200 transition-colors font-spline"
-                    onClick={() => handlePopularSearch("Migraine")}>Migraine</button>
+                    onClick={() => handlePopularSearch("A-36")}>A-36</button>
                 </div>
               </div>
+
+              {/* Info Cards */}
               <div className="w-full mt-12 sm:mt-16 lg:mt-20 max-w-6xl mx-auto px-2 sm:px-4 md:px-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                   <div className="relative bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 p-4 sm:p-6 lg:p-8 min-h-[18rem] sm:min-h-[20rem] lg:min-h-[22rem] rounded-xl shadow-lg flex flex-col items-center transition-all duration-300 ease-in-out hover:border-green-400 hover:shadow-2xl hover:-translate-y-2 group overflow-hidden">
