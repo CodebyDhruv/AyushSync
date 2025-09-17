@@ -64,7 +64,7 @@ const HowApi = () => {
             <div className='max-w-7xl mx-auto'>
                 <div className="text-center mb-16">
                     <h2 className='text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 font-spline mb-6'>
-                        How our AyushLSync API <span className="text-green-600">works </span>?
+                        How our AyushSync API <span className="text-green-600">works </span>?
                     </h2>
                     <p className='text-lg sm:text-xl text-gray-600 font-spline max-w-3xl mx-auto leading-relaxed'>
                         The AyushSync API provides a seamless interface for integrating traditional Ayush practices into modern digital health solutions. Here's a simplified overview of its functionality:
