@@ -3,7 +3,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { Link } from 'react-router-dom';
 
-const API_BASE = '';
+const API_BASE = '/api';
 const CONDITION_API_URL = 'http://3.26.95.153:8080/api/codesystem/search';
 
 const CODE_SYSTEMS = {

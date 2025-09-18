@@ -1,0 +1,12 @@
+# This file tells Netlify how to build and deploy your site
+
+# Build settings (these are common defaults, adjust if needed)
+[build]
+  command = "npm run build"
+  publish = "dist" # Use "build" if you are using Create React App
+
+# Proxy rule for your API
+[[redirects]]
+  from = "/api/*"
+  to = "http://3.26.95.153:8080/api/:splat"
+  status = 200
