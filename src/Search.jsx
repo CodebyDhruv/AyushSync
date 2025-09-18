@@ -3,7 +3,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { Link } from 'react-router-dom';
 
-const API_BASE = '/api';
+const API_BASE = '/.netlify/functions/api-proxy/api';
 
 const CODE_SYSTEMS = {
   ayurveda: 'http://namaste.ayush.gov.in/fhir/CodeSystem/ayurveda-medicine-codes',
