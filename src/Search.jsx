@@ -3,7 +3,6 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { Link } from 'react-router-dom';
 
-// CORRECT: All API calls will now use this single, relative path.
 const API_BASE = '/api';
 
 const CODE_SYSTEMS = {
