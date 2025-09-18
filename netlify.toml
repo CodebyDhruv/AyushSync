@@ -1,33 +1,17 @@
-# This file tells Netlify how to build and deploy your site
+# netlify.toml
 [build]
   command = "npm run build"
   publish = "dist" # Use "build" for Create React App
+  functions = "netlify/functions"
 
-# Add CORS headers for all API routes
-[[headers]]
-  for = "/api/*"
-  [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Headers = "Content-Type, Authorization"
-    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
-
-# Rule 1: For ConceptMap APIs
+# Redirect all API calls to the Netlify function
 [[redirects]]
-  from = "/api/conceptmaps/*"
-  to = "http://3.26.95.153:8080/api/conceptmaps/:splat"
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
   status = 200
-  force = true
 
-# Rule 2: For CodeSystem APIs (like lookup and search)
+# Handle SPA routing (optional - for React Router)
 [[redirects]]
-  from = "/api/codesystem/*"
-  to = "http://3.26.95.153:8080/api/codesystem/:splat"
+  from = "/*"
+  to = "/index.html"
   status = 200
-  force = true
-
-# Rule 3: For FHIR APIs
-[[redirects]]
-  from = "/api/fhir/*"
-  to = "http://3.26.95.153:8080/api/fhir/:splat"
-  status = 200
-  force = true
