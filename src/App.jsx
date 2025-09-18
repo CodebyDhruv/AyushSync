@@ -4,12 +4,13 @@ import Footer from './components/Footer.jsx'
 import About from './components/About.jsx'
 import WhyChoose from './components/Whychoose.jsx'
 import HowApi from './components/Howapi.jsx';
+import Stats from './components/Stats.jsx';
 import { useEffect, useState } from 'react';
 import Loader from './components/Loader';
 import { useLocation, Link } from 'react-router-dom';
+import SwiperCarousel from "./components/SwiperCarousel.jsx" // Corrected import name
 
 function App() {
-  
   const [loading, setLoading] = useState(true);
   const location = useLocation();
 
@@ -46,8 +47,10 @@ function App() {
     <div className="scroll-smooth">
       <Navbar />
 
-
       <main className="relative w-screen left-0 min-h-screen flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 lg:pt-32 overflow-hidden">
+        {/* Statistics Sidebar Component */}
+        <Stats />
+
         <div className="absolute inset-0 w-screen h-screen bg-gradient-to-br from-green-50 via-white to-green-50"></div>
         <div className="absolute top-20 left-10 w-16 h-16 text-green-200 opacity-40 animate-bounce" style={{ animationDuration: '3s', animationDelay: '0s' }}>
           <svg fill="currentColor" viewBox="0 0 24 24">
@@ -98,13 +101,10 @@ function App() {
         }}></div>
 
         <div className="relative z-10 text-center max-w-6xl mx-auto">
-
-
           <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-gray-900 mb-8 leading-tight font-spline">
             Welcome to{" "}
             <span className="bg-gradient-to-r from-green-600 via-green-700 to-green-800 bg-clip-text text-transparent relative">
               AyushSync
-
             </span>
           </h1>
 
@@ -146,7 +146,6 @@ function App() {
               </span>
             </button>
           </div>
-
         </div>
       </main>
 
@@ -157,10 +156,13 @@ function App() {
         <About />
       </div>
 
+      <div className="py-20 bg-white">
+        <SwiperCarousel />
+      </div>
+
       <Footer />
     </div>
   );
 }
 
-
-export default App
+export default App;
