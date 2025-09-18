@@ -3,8 +3,8 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { Link } from 'react-router-dom';
 
+// CORRECT: All API calls will now use this single, relative path.
 const API_BASE = '/api';
-const CONDITION_API_URL = 'http://3.26.95.153:8080/api/codesystem/search';
 
 const CODE_SYSTEMS = {
   ayurveda: 'http://namaste.ayush.gov.in/fhir/CodeSystem/ayurveda-medicine-codes',
@@ -82,7 +82,7 @@ const Search = () => {
 
   const performConditionSearch = async (term) => {
     try {
-      const response = await fetch(`${CONDITION_API_URL}?query=${encodeURIComponent(term)}&limit=10`);
+      const response = await fetch(`${API_BASE}/codesystem/search?query=${encodeURIComponent(term)}&limit=10`);
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Unable to read error message');
         throw new Error(`API Error: ${response.status} - ${errorText}`);
@@ -103,7 +103,7 @@ const Search = () => {
     const results = [];
     const systemUrl = CODE_SYSTEMS[selectedCodeSystem];
     try {
-      const response = await fetch(`${API_BASE}/api/codesystem/lookup?system=${encodeURIComponent(systemUrl)}&code=${encodeURIComponent(term)}`);
+      const response = await fetch(`${API_BASE}/codesystem/lookup?system=${encodeURIComponent(systemUrl)}&code=${encodeURIComponent(term)}`);
       if (response.ok) {
         const data = await response.json();
         results.push({
@@ -126,11 +126,7 @@ const Search = () => {
 
   const performIcdToTraditionalSearch = async (icdCode) => {
     try {
-      const response = await fetch(`${API_BASE}/api/conceptmaps/translate/icd/${encodeURIComponent(icdCode)}`, {
-        method: 'GET',
-        mode: 'cors',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-      });
+      const response = await fetch(`${API_BASE}/conceptmaps/translate/icd/${encodeURIComponent(icdCode)}`);
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Unable to read error message');
         throw new Error(`API Error: ${response.status} - ${errorText}`);
@@ -153,11 +149,7 @@ const Search = () => {
   const performTraditionalToIcdSearch = async (traditionalCode) => {
     const fullCode = `${traditionalCodePrefix}:${traditionalCode}`;
     try {
-      const response = await fetch(`${API_BASE}/api/conceptmaps/translate/traditional/${encodeURIComponent(fullCode)}`, {
-        method: 'GET',
-        mode: 'cors',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-      });
+      const response = await fetch(`${API_BASE}/conceptmaps/translate/traditional/${encodeURIComponent(fullCode)}`);
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Unable to read error message');
         throw new Error(`API Error: ${response.status} - ${errorText}`);
@@ -191,7 +183,7 @@ const Search = () => {
 
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/api/codesystem/lookup?system=${encodeURIComponent(systemUrl)}&code=${encodeURIComponent(code)}`);
+      const response = await fetch(`${API_BASE}/codesystem/lookup?system=${encodeURIComponent(systemUrl)}&code=${encodeURIComponent(code)}`);
       if (response.ok) {
         const data = await response.json();
         setTraditionalResults([{
