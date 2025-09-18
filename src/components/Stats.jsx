@@ -75,7 +75,7 @@ const Stats = () => {
         {
             icon: <FileText className="w-8 h-8" />,
             label: "Total NAMASTE Codes",
-            value: "7000",
+            value: "7000+",
             bgColor: "bg-blue-50",
             iconColor: "text-blue-600",
             borderColor: "border-blue-200"
