@@ -41,14 +41,16 @@ const router = createBrowserRouter([
             { path: "twitter", element: <Comingsoon /> },
             { path: "linkedin", element: <Comingsoon /> },
             { path: "apidocs", element: <Apidocs /> },
+            { path: "problem_list", element: <Problem_list /> },
+            { path: "upload", element: <Upload /> },
+            { path: "audit", element: <AuditLogs /> },
             // Protected Routes
             {
                 element: <ProtectedRoute />,
                 children: [
-                    { path: "problem_list", element: <Problem_list /> },
-                    { path: "upload", element: <Upload /> },
-                    { path: "audit", element: <AuditLogs /> },
-
+                    // { path: "problem_list", element: <Problem_list /> },
+                    // { path: "upload", element: <Upload /> },
+                    // { path: "audit", element: <AuditLogs /> },
                 ]
             }
         ]
