@@ -270,35 +270,35 @@ const sections = [
 				<p className="text-gray-700 mb-4">
 					Use the ConceptMap endpoints to translate codes between different terminology systems, such as traditional medicine (NAMASTE) and ICD.
 				</p>
-				<p className="text-gray-700 font-medium">Base URL: <InlineCode>http://${baseurl}</InlineCode></p>
+				<p className="text-gray-700 font-medium">Base URL: <InlineCode>http://$baseurl</InlineCode></p>
 
 				<SubHeading id="map-translate-icd">1. Translate ICD Code to Traditional Code</SubHeading>
 				<p className="mb-2">Translates an ICD-10 code to a corresponding traditional medicine code.</p>
 				<p><span className="font-semibold">Path:</span> <InlineCode>/api/conceptmaps/translate/icd/{'{icdCode}'}</InlineCode></p>
 				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
 				<p className="font-semibold mt-2">Example Request:</p>
-				<CodeBlock>{`curl http://${baseurl}/api/conceptmaps/translate/icd/SK00`}</CodeBlock>
+				<CodeBlock>{`curl http://$baseurl/api/conceptmaps/translate/icd/SK00`}</CodeBlock>
 
 				<SubHeading id="map-translate-traditional">2. Translate Traditional Code to ICD Code</SubHeading>
 				<p className="mb-2">Translates a traditional medicine code to a corresponding ICD-10 code. You need to specify the code category (e.g., NAMC or NUMC) in the URL.</p>
 				<p><span className="font-semibold">Path:</span> <InlineCode>/api/conceptmaps/translate/traditional/{'{traditionalCode}'}</InlineCode></p>
 				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
 				<p className="font-semibold mt-2">Example Request:</p>
-				<CodeBlock>{`curl http://${baseurl}/api/conceptmaps/translate/traditional/NAMC:AAB-52`}</CodeBlock>
+				<CodeBlock>{`curl http://$baseurl/api/conceptmaps/translate/traditional/NAMC:AAB-52`}</CodeBlock>
 
 				<SubHeading id="map-get-all">3. Get All ConceptMaps</SubHeading>
 				<p className="mb-2">Retrieves all the stored ConceptMaps.</p>
 				<p><span className="font-semibold">Path:</span> <InlineCode>/api/conceptmaps/all</InlineCode></p>
 				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
 				<p className="font-semibold mt-2">Example Request:</p>
-				<CodeBlock>{`curl http://${baseurl}/api/conceptmaps/all`}</CodeBlock>
+				<CodeBlock>{`curl http://$baseurl/api/conceptmaps/all`}</CodeBlock>
 
 				<SubHeading id="map-test">4. Test Endpoint</SubHeading>
 				<p className="mb-2">A simple test endpoint to verify that the ConceptMap API is running.</p>
 				<p><span className="font-semibold">Path:</span> <InlineCode>/api/conceptmaps/test</InlineCode></p>
 				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
 				<p className="font-semibold mt-2">Example Request:</p>
-				<CodeBlock>{`curl http://${baseurl}/api/conceptmaps/test`}</CodeBlock>
+				<CodeBlock>{`curl http://$baseurl/api/conceptmaps/test`}</CodeBlock>
 			</>
 		)
 	},
@@ -319,28 +319,28 @@ const sections = [
 				<p className="text-gray-700 mb-4">
 					Interact with the underlying terminology code systems, perform lookups, and check service health. These endpoints allow for both simple overviews and FHIR-compliant interactions.
 				</p>
-				<p className="text-gray-700 font-medium">Base URL: <InlineCode>http://${baseurl}</InlineCode></p>
+				<p className="text-gray-700 font-medium">Base URL: <InlineCode>http://$baseurl</InlineCode></p>
 
 				<SubHeading id="cs-get-all-overview">1. Get All CodeSystems Overview</SubHeading>
 				<p className="mb-2">Retrieves an overview of all available CodeSystems.</p>
 				<p><span className="font-semibold">Path:</span> <InlineCode>/api/codesystem/all</InlineCode></p>
 				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
 				<p className="font-semibold mt-2">Example Request:</p>
-				<CodeBlock>{`curl http://${baseurl}/api/codesystem/all`}</CodeBlock>
+				<CodeBlock>{`curl http://$baseurl/api/codesystem/all`}</CodeBlock>
 
 				<SubHeading id="cs-get-all-fhir">2. Get All CodeSystems (FHIR)</SubHeading>
 				<p className="mb-2">Retrieves all CodeSystems as a FHIR Bundle.</p>
 				<p><span className="font-semibold">Path:</span> <InlineCode>/api/fhir/CodeSystem</InlineCode></p>
 				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
 				<p className="font-semibold mt-2">Example Request:</p>
-				<CodeBlock>{`curl http://${baseurl}/api/fhir/CodeSystem`}</CodeBlock>
+				<CodeBlock>{`curl http://$baseurl/api/fhir/CodeSystem`}</CodeBlock>
 
 				<SubHeading id="cs-get-by-id-fhir">3. Get CodeSystem by ID (FHIR)</SubHeading>
 				<p className="mb-2">Retrieves a specific CodeSystem by its ID as a FHIR CodeSystem resource.</p>
 				<p><span className="font-semibold">Path:</span> <InlineCode>/api/fhir/CodeSystem/{'{id}'}</InlineCode></p>
 				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
 				<p className="font-semibold mt-2">Example Request:</p>
-				<CodeBlock>{`curl http://${baseurl}/api/fhir/CodeSystem/ayurveda`}</CodeBlock>
+				<CodeBlock>{`curl http://$baseurl/api/fhir/CodeSystem/ayurveda`}</CodeBlock>
 
 				<SubHeading id="cs-lookup-fhir">4. FHIR $lookup Operation</SubHeading>
 				<p className="mb-2">Performs a FHIR <InlineCode>$lookup</InlineCode> operation to find a concept within a specified code system.</p>
@@ -353,21 +353,21 @@ const sections = [
 					<li><strong>Unani:</strong> <InlineCode>http://namaste.ayush.gov.in/fhir/CodeSystem/unani-medicine-codes</InlineCode></li>
 				</ul>
 				<p className="font-semibold mt-2">Example Request (Ayurveda):</p>
-				<CodeBlock>{`curl "http://${baseurl}/api/codesystem/lookup?system=http://namaste.ayush.gov.in/fhir/CodeSystem/ayurveda-medicine-codes&code=AAB"`}</CodeBlock>
+				<CodeBlock>{`curl "http://$baseurl/api/codesystem/lookup?system=http://namaste.ayush.gov.in/fhir/CodeSystem/ayurveda-medicine-codes&code=AAB"`}</CodeBlock>
 
 				<SubHeading id="cs-test-db">5. Test Database Connection</SubHeading>
 				<p className="mb-2">Checks the database connection and returns metadata.</p>
 				<p><span className="font-semibold">Path:</span> <InlineCode>/test-db</InlineCode></p>
 				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
 				<p className="font-semibold mt-2">Example Request:</p>
-				<CodeBlock>{`curl http://${baseurl}/test-db`}</CodeBlock>
+				<CodeBlock>{`curl http://$baseurl/test-db`}</CodeBlock>
 
 				<SubHeading id="cs-health-check">6. Health Check</SubHeading>
 				<p className="mb-2">A health check endpoint to verify if the application is running.</p>
 				<p><span className="font-semibold">Path:</span> <InlineCode>/health</InlineCode></p>
 				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
 				<p className="font-semibold mt-2">Example Request:</p>
-				<CodeBlock>{`curl http://${baseurl}/health`}</CodeBlock>
+				<CodeBlock>{`curl http://$baseurl/health`}</CodeBlock>
 			</>
 		)
 	},
