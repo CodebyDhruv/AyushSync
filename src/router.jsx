@@ -39,6 +39,7 @@ const router = createBrowserRouter([
             { path: "terms", element: <Comingsoon /> },
             { path: "facebook", element: <Comingsoon /> },
             { path: "twitter", element: <Comingsoon /> },
+            { path: "youtube", element: <Comingsoon /> },
             { path: "linkedin", element: <Comingsoon /> },
             { path: "apidocs", element: <Apidocs /> },
             { path: "problem_list", element: <Problem_list /> },
