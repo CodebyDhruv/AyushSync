@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import Navbar from "./components/Navbar"
-import Footer from "./components/Footer"
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import { Link } from "react-router-dom";
-
 
 const CodeBlock = ({ children }) => {
 	const [isCopied, setIsCopied] = useState(false);
@@ -113,7 +112,7 @@ const sections = [
 		id: 'features',
 		title: 'Features',
 		category: 'Getting Started',
-		subheadings: [], // This section has no subheadings
+		subheadings: [],
 		content: (
 			<>
 				<p className="mb-4 text-gray-700">A summary of the core features offered by AyushSync.</p>
@@ -160,14 +159,11 @@ const sections = [
 				<p className="text-gray-700 mb-2">To install the Ayush CLI globally via npm, open your terminal and run:</p>
 				<CodeBlock>npm install -g @mayankjha07/ayush-cli</CodeBlock>
 				<p className="text-gray-700 mb-2">Once installed, you can run the CLI using the `ayush-cli` command:</p>
-				<CodeBlock>{`ayush-cli <command> [options]
-# Example: ayush-cli chat
-# Example: ayush-cli --help`}</CodeBlock>
+				<CodeBlock>{`ayush-cli <command> [options]\n# Example: ayush-cli chat\n# Example: ayush-cli --help`}</CodeBlock>
 
 				<SubHeading id="cli-install-local">Installation (Local Development)</SubHeading>
 				<p className="text-gray-700 mb-2">To run the Ayush CLI directly from the source for local development, navigate to the project root and execute:</p>
-				<CodeBlock>{`chmod 777 index.js
-./index.js`}</CodeBlock>
+				<CodeBlock>{`chmod 777 index.js\n./index.js`}</CodeBlock>
 
 				<SubHeading id="cli-usage">Usage</SubHeading>
 				<p className="text-gray-700 mb-4">The Ayush CLI can be used with various commands and flags.</p>
@@ -197,17 +193,7 @@ const sections = [
 				</ul>
 
 				<SubHeading id="cli-examples">Example Usage</SubHeading>
-				<CodeBlock>{`# Start the CLI in interactive REPL mode
-./index.js
-
-# Enable test mode and then start the REPL
-./index.js --test-mode
-
-# Directly initiate the chat feature (requires login or test mode)
-./index.js chat
-
-# Get help information about the CLI
-./index.js help`}</CodeBlock>
+				<CodeBlock>{`# Start the CLI in interactive REPL mode\n./index.js\n\n# Enable test mode and then start the REPL\n./index.js --test-mode\n\n# Directly initiate the chat feature (requires login or test mode)\n./index.js chat\n\n# Get help information about the CLI\n./index.js help`}</CodeBlock>
 			</>
 		)
 	},
@@ -234,12 +220,7 @@ const sections = [
 				<p><span className="font-semibold">Path:</span> <InlineCode>/request-otp</InlineCode></p>
 				<p><span className="font-semibold">Method:</span> <InlineCode>POST</InlineCode></p>
 				<p className="font-semibold mt-2">Request Body Example:</p>
-				<CodeBlock>{`{
-  "name": "John Doe",
-  "phone_number": "9876543210",
-  "abha_id": "john.doe@abha",
-  "email": "john.doe@example.com"
-}`}</CodeBlock>
+				<CodeBlock>{`{\n  "name": "John Doe",\n  "phone_number": "9876543210",\n  "abha_id": "john.doe@abha",\n  "email": "john.doe@example.com"\n}`}</CodeBlock>
 
 				<SubHeading id="auth-register">2. Register User</SubHeading>
 				<p className="mb-2">Completes user registration using the ABHA ID and the received OTP.</p>
@@ -262,18 +243,14 @@ const sections = [
 				<p className="font-semibold mt-2">Example URL:</p>
 				<CodeBlock>https://ayush-auth.vercel.app/token?abha_id=john.doe@abha&otp=654321</CodeBlock>
 				<p className="font-semibold mt-2">Example Response (Success):</p>
-				<CodeBlock>{`{
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "bearer"
-}`}</CodeBlock>
+				<CodeBlock>{`{\n  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",\n  "token_type": "bearer"\n}`}</CodeBlock>
 
 				<SubHeading id="auth-get-user">5. Get Current User Information (Protected)</SubHeading>
 				<p className="mb-2">Retrieves information about the currently authenticated user.</p>
 				<p><span className="font-semibold">Path:</span> <InlineCode>/users/me</InlineCode></p>
 				<p><span className="font-semibold">Method:</span> <InlineCode>GET</InlineCode></p>
 				<p className="font-semibold mt-2">Example cURL Command:</p>
-				<CodeBlock>{`curl -X GET "https://ayush-auth.vercel.app/users/me" \\
-  -H "Authorization: Bearer <access_token>"`}
+				<CodeBlock>{`curl -X GET "https://ayush-auth.vercel.app/users/me" \\\n  -H "Authorization: Bearer <access_token>"`}
 				</CodeBlock>
 			</>
 		)
@@ -494,7 +471,7 @@ const Apidocs = () => {
 			<Navbar />
 			<div className="bg-white mt-15 pt-16 mb-16">
 				<div className="flex flex-col lg:flex-row max-w-7xl mx-auto">
-					<aside className="lg:w-72 bg-white sticky top-16 self-start p-6 h-[calc(100vh-4rem)] overflow-y-auto">
+					<aside className="lg:w-72 bg-white lg:sticky top-16 self-start p-6 lg:h-[calc(100vh-4rem)] lg:overflow-y-auto">
 						<nav>
 							{Object.entries(categories).map(([category, sectionsInCategory]) => (
 								<div key={category} className="mb-8">
@@ -519,12 +496,12 @@ const Apidocs = () => {
 						</nav>
 					</aside>
 
-					<main ref={mainContentRef} className="flex-1 px-8 py-12 min-w-0 h-[calc(100vh-4rem)] overflow-y-auto">
+					<main ref={mainContentRef} className="flex-1 px-4 sm:px-6 lg:px-8 py-12 min-w-0 lg:h-[calc(100vh-4rem)] lg:overflow-y-auto">
 						<SectionHeading id={currentSection.id}>{currentSection.title}</SectionHeading>
 						{currentSection.content}
 					</main>
 
-					<aside className="hidden lg:block lg:w-72 bg-white sticky top-16 self-start p-6 h-[calc(100vh-4rem)] overflow-y-auto">
+					<aside className="hidden lg:block lg:w-72 bg-white lg:sticky top-16 self-start p-6 lg:h-[calc(100vh-4rem)] lg:overflow-y-auto ">
 						{currentSection.subheadings.length > 0 && (
 							<div>
 								<h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-6">On This Page</h3>

@@ -156,7 +156,7 @@ function App() {
         <About />
       </div>
 
-      <div className="py-20 bg-white">
+      <div className="pb-30 bg-white">
         <SwiperCarousel />
       </div>
 

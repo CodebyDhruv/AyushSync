@@ -30,7 +30,7 @@ const About = () => {
     }
     ];
     return (
-        <div id="about-section" className='min-h-screen w-full pb-30 px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 lg:pt-32'>
+        <div id="about-section" className='min-h-screen w-full px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 lg:pt-32'>
             <div className='flex flex-col justify-center items-center gap-7 max-w-6xl mx-auto'>
                 <h2 className='text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 font-spline mb-6'>
                     About <span className="text-green-600">Us </span>
